@@ -12,7 +12,7 @@ Review of the Prapanji budget tracking Google Apps Script codebase covering `Cod
 - [x] **Implicit Global Variables** (`Code.gs:2-44`)
   All top-level constants are declared without `var`/`const`, polluting the global scope.
 
-- [ ] **XSS in Duplicate Transaction Dialog** (`Code.gs:614-626`)
+- [x] **XSS in Duplicate Transaction Dialog** (`Code.gs:614-626`)
   Transaction descriptions are inserted into HTML without escaping. Malicious descriptions could inject scripts.
 
 - [ ] **Invalid CSS `style` Attribute Syntax** (`EnterTrans.html:63,74`)

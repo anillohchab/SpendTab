@@ -615,7 +615,7 @@ function enterTransactions(transactionData) {
     details += '<table>'
     for (var i = 0; i < suppressedTransactions.length; ++i) {
       var tran = suppressedTransactions[i];
-      details += '<tr><td>' + tran.transDate + '</td><td>' + tran.desc + '</td><td><strong>' + tran.amt + '</strong></td></tr>';
+      details += '<tr><td>' + escapeHtml(tran.transDate) + '</td><td>' + escapeHtml(tran.desc) + '</td><td><strong>' + escapeHtml(tran.amt) + '</strong></td></tr>';
     }
     details += '</table>';
     
@@ -672,6 +672,16 @@ function fixAmount(amt, isChecking) {
 ///////////////////////////////////////////////////////////
 // Utility functions
 ///////////////////////////////////////////////////////////
+
+function escapeHtml(text) {
+  if (text == null) return '';
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
 
 function getCurrentYear() {
   return new Date().getFullYear();
