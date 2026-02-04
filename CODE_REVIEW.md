@@ -15,7 +15,7 @@ Review of the Prapanji budget tracking Google Apps Script codebase covering `Cod
 - [x] **XSS in Duplicate Transaction Dialog** (`Code.gs:614-626`)
   Transaction descriptions are inserted into HTML without escaping. Malicious descriptions could inject scripts.
 
-- [ ] **Invalid CSS `style` Attribute Syntax** (`EnterTrans.html:63,74`)
+- [x] **Invalid CSS `style` Attribute Syntax** (`EnterTrans.html:63,74`)
   Uses `width=100%` and `justify-content=center` instead of `width:100%` and `justify-content:center`.
 
 ### Medium Priority
