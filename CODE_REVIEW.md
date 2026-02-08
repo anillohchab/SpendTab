@@ -1,7 +1,7 @@
-# Code Review: Prapanji
+# Code Review: SpendTab
 
 ## Overview
-Review of the Prapanji budget tracking Google Apps Script codebase covering `Code.gs` and `EnterTrans.html`.
+Review of the SpendTab personal finance tracking Google Apps Script codebase covering `Code.gs` and `EnterTrans.html`.
 
 ---
 

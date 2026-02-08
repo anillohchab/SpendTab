@@ -27,8 +27,8 @@ var TRANSACTION_SUBCAT_COL = colNameToNum('G');
 var DATE_ROW = 3;
 
 // Menu Names
-var MAIN_MENU = "Budget Tracker";
-var SETUP_BUDGET = 'Setup Budget';
+var MAIN_MENU = "SpendTab";
+var SETUP_BUDGET = 'Setup SpendTab';
 var ENTER_TRANSACTIONS_MENU = 'Enter Transactions';
 var FIX_FORMULAS_MENU = 'Fix Formulas';
 var FIX_CATEGORY_DROPDOWNS_MENU = 'Fix Category Dropdowns';
