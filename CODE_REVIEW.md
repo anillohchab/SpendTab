@@ -20,25 +20,25 @@ Review of the SpendTab personal finance tracking Google Apps Script codebase cov
 
 ### Medium Priority
 
-- [ ] **Typo `budgeTrackerVersion`** (`Code.gs:66,83`)
+- [x] **Typo `budgeTrackerVersion`** (`Code.gs:66,83`)
   Property key is missing a "t" -- should be `budgetTrackerVersion`.
 
-- [ ] **`catch(e)` Shadows Event Parameter** (`Code.gs:153`)
+- [x] **`catch(e)` Shadows Event Parameter** (`Code.gs:153`)
   The catch variable `e` shadows the outer `onEdit(e)` event parameter.
 
-- [ ] **No Input Validation on Transactions** (`Code.gs:568+`)
+- [x] **No Input Validation on Transactions** (`Code.gs:568+`)
   `enterTransactions` does not validate date format, numeric amounts, or required fields.
 
-- [ ] **Inefficient Cell-by-Cell Writes** (`Code.gs:605-610`)
+- [x] **Inefficient Cell-by-Cell Writes** (`Code.gs:605-610`)
   Each transaction field is written with a separate `setValue()` call. Should batch with `setValues()`.
 
-- [ ] **Invalid CSS `//` Comments** (`EnterTrans.html:13,52`)
+- [x] **Invalid CSS `//` Comments** (`EnterTrans.html:13,52`)
   Uses `//` which is not valid CSS comment syntax. Should be `/* */`.
 
-- [ ] **Function Typo `handePasteEvent`** (`EnterTrans.html:109,255`)
+- [x] **Function Typo `handePasteEvent`** (`EnterTrans.html:109,255`)
   Missing "l" -- should be `handlePasteEvent`.
 
-- [ ] **Variable Shadowing `row`** (`EnterTrans.html:401-402`)
+- [x] **Variable Shadowing `row`** (`EnterTrans.html:401-402`)
   Callback parameter `row` is immediately shadowed by `var row = $(row)`.
 
 ### Low Priority
