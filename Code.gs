@@ -563,67 +563,115 @@ function openEnterTransactionsDialog() {
 }
 
 /**
+ * Validates a transaction entry.
+ * Returns an object with { valid: boolean, reason: string }
+ */
+function validateTransaction(entry, amt) {
+  // Check transaction date is parseable
+  if (!entry.transDate || entry.transDate.trim() === '') {
+    return { valid: false, reason: 'Missing transaction date' };
+  }
+  var parsedDate = new Date(entry.transDate);
+  if (isNaN(parsedDate.getTime())) {
+    return { valid: false, reason: 'Invalid date format' };
+  }
+
+  // Check amount is numeric
+  if (amt === null || amt === undefined || amt === '') {
+    return { valid: false, reason: 'Missing amount' };
+  }
+  var numericAmt = parseFloat(String(amt).replace(/[,$]/g, ''));
+  if (isNaN(numericAmt)) {
+    return { valid: false, reason: 'Invalid amount' };
+  }
+
+  return { valid: true, reason: '' };
+}
+
+/**
  * Callback from the dialog.
  */
 function enterTransactions(transactionData) {
-  // Display the values submitted from the dialog box in the Logger. 
-  //Logger.log(transactionData.transSource);
-  //Logger.log('suppressDups: ' + transactionData.suppressDups);
   var isChecking = transactionData.transSource == 'checking';
-  //Logger.log('isChecking: ' + isChecking);
   var values = transactionData.values;
-  //Logger.log(values);
-  
+
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = spreadsheet.getSheetByName(TRANSACTION_SHEET_NAME);
   var currentRow = sheet.getLastRow() + 1;
-  
+
   var existingTransactions = {};
   if (transactionData.suppressDups) {
     var existingData = sheet.getDataRange().getValues();
     for (var row = 0; row < existingData.length; ++row) {
       var key = createKey(existingData[row][1], existingData[row][3], existingData[row][4]);
-      //Logger.log('existing Key: ' + key + ' --> ' + existingData[row][1]);
       existingTransactions[key] = existingData[row];
     }
   }
-  
+
   var suppressedTransactions = [];
+  var invalidTransactions = [];
+  var rowsToInsert = [];
+
   for (var idx = 0; idx < values.length; ++idx) {
     var entry = values[idx];
-    entry.type = entry.type.trim();
-    entry.desc = entry.desc.trim();
-    var range = sheet.getRange(currentRow + ':' + currentRow);
+    entry.type = (entry.type || '').trim();
+    entry.desc = (entry.desc || '').trim();
     var amt = fixAmount(entry.amt, isChecking);
+
+    // Validate the transaction
+    var validation = validateTransaction(entry, amt);
+    if (!validation.valid) {
+      entry.reason = validation.reason;
+      invalidTransactions.push(entry);
+      continue;
+    }
+
+    // Check for duplicates
     var key = createKey(entry.transDate, entry.desc, amt);
-    //Logger.log('Incoming Key: ' + key);
     if (existingTransactions.hasOwnProperty(key)) {
-      //Logger.log('Found duplicate row: ' + key);
       suppressedTransactions.push(entry);
       continue;
     }
-    range.getCell(1, 1).setValue(entry.type);
-    range.getCell(1, 2).setValue(entry.transDate);
-    range.getCell(1, 3).setValue(entry.postDate);
-    range.getCell(1, 4).setValue(entry.desc);
-    range.getCell(1, 5).setValue(amt);
-    ++currentRow;
+
+    // Collect valid row for batch insert
+    rowsToInsert.push([entry.type, entry.transDate, entry.postDate || '', entry.desc, amt]);
   }
-  
+
+  // Batch write all valid transactions at once
+  if (rowsToInsert.length > 0) {
+    sheet.getRange(currentRow, 1, rowsToInsert.length, 5).setValues(rowsToInsert);
+  }
+
+  // Show warning dialogs for skipped transactions
+  var messages = [];
+
+  if (invalidTransactions.length > 0) {
+    var details = '<u>These transactions had validation errors</u>:';
+    details += '<table>';
+    for (var i = 0; i < invalidTransactions.length; ++i) {
+      var tran = invalidTransactions[i];
+      details += '<tr><td>' + escapeHtml(tran.transDate || '(empty)') + '</td><td>' + escapeHtml(tran.desc || '(empty)') + '</td><td>' + escapeHtml(tran.amt || '(empty)') + '</td><td><em>' + escapeHtml(tran.reason) + '</em></td></tr>';
+    }
+    details += '</table>';
+    messages.push(details);
+  }
+
   if (suppressedTransactions.length > 0) {
     var details = '<u>These transactions appeared to be duplicates</u>:';
-    details += '<table>'
+    details += '<table>';
     for (var i = 0; i < suppressedTransactions.length; ++i) {
       var tran = suppressedTransactions[i];
       details += '<tr><td>' + escapeHtml(tran.transDate) + '</td><td>' + escapeHtml(tran.desc) + '</td><td><strong>' + escapeHtml(tran.amt) + '</strong></td></tr>';
     }
     details += '</table>';
-    
-    var html =   '<html><head><link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">'
-               + details
-               + '<input type="button" value="OK" onClick="google.script.host.close();" />';
+    messages.push(details);
+  }
+
+  if (messages.length > 0) {
+    var html = '<html><head><link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css"></head><body>'
+             + messages.join('<br/><br/>')
+             + '<br/><input type="button" value="OK" onClick="google.script.host.close();" /></body></html>';
     SpreadsheetApp.getUi().showModalDialog(HtmlService.createHtmlOutput(html), 'Transactions NOT added');
-    //SpreadsheetApp.getUi().alert(details);
   }
 }
 

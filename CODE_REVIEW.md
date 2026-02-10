@@ -26,10 +26,10 @@ Review of the SpendTab personal finance tracking Google Apps Script codebase cov
 - [x] **`catch(e)` Shadows Event Parameter** (`Code.gs:153`)
   The catch variable `e` shadows the outer `onEdit(e)` event parameter.
 
-- [ ] **No Input Validation on Transactions** (`Code.gs:568+`)
+- [x] **No Input Validation on Transactions** (`Code.gs:568+`)
   `enterTransactions` does not validate date format, numeric amounts, or required fields.
 
-- [ ] **Inefficient Cell-by-Cell Writes** (`Code.gs:605-610`)
+- [x] **Inefficient Cell-by-Cell Writes** (`Code.gs:605-610`)
   Each transaction field is written with a separate `setValue()` call. Should batch with `setValues()`.
 
 - [x] **Invalid CSS `//` Comments** (`EnterTrans.html:13,52`)
