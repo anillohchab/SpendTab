@@ -63,8 +63,8 @@ function onOpen(e) {
     // Add a menu item based on properties (doesn't work in AuthMode.NONE).
     menu = SpreadsheetApp.getUi().createMenu(MAIN_MENU);
     var properties = PropertiesService.getDocumentProperties();
-    var budgeTrackerVersion = properties.getProperty('budgeTrackerVersion');
-    if (budgeTrackerVersion !== null) {
+    var budgetTrackerVersion = properties.getProperty('budgetTrackerVersion');
+    if (budgetTrackerVersion !== null) {
       installTriggers = true;
       addMenuItems(menu);
     } else {
@@ -80,7 +80,7 @@ function onOpen(e) {
 
 function enableBudgetTracker() {
   var properties = PropertiesService.getDocumentProperties();
-  properties.setProperty('budgeTrackerVersion', 1);
+  properties.setProperty('budgetTrackerVersion', 1);
   
   // Create any missing sheets
   setupBudgetSheets();
@@ -150,8 +150,8 @@ function onEdit(e) {
     }
     
     fixSubCategory(spreadsheet, sheet, e.range, categorySheetName);
-  } catch(e) {
-    Logger.log('Unexpected exception in onEdit: ' + e);
+  } catch(err) {
+    Logger.log('Unexpected exception in onEdit: ' + err);
   }
 }
 

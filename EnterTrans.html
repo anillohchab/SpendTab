@@ -10,11 +10,11 @@
         padding:0;
       }
       
-      // BEGIN: Tooltips CSS from: https://www.w3schools.com/howto/howto_css_tooltip.asp
+      /* BEGIN: Tooltips CSS from: https://www.w3schools.com/howto/howto_css_tooltip.asp */
       .tooltip {
         position: relative;
         display: inline-block;
-        //border-bottom: 1px dotted black;
+        /* border-bottom: 1px dotted black; */
       }
 
       .tooltip .tooltiptext {
@@ -49,7 +49,7 @@
         visibility: visible;
         opacity: 1;
       }
-      // END: Tooltips CSS
+      /* END: Tooltips CSS */
     </style>
     
     <!-- TODO -> REMOVE
@@ -106,7 +106,7 @@
       
       // Initialize the dialog
       function initialize() {
-        document.addEventListener('paste', handePasteEvent);
+        document.addEventListener('paste', handlePasteEvent);
         $("#trans-src-chk").focus();
         
         curColumnSelection = $(this).find('option:selected').val();
@@ -252,7 +252,7 @@
       ///////////////////////////////////////////////////////
       
       // Called when the user pastes data into the dialog
-      function handePasteEvent(evt) {
+      function handlePasteEvent(evt) {
         console.log(evt);
         var rawData = evt.clipboardData.getData("text/plain");
         var htmlData = evt.clipboardData.getData("text/html");
@@ -399,12 +399,12 @@
         // loop through each row
         var values = [];
         $('table tbody tr').each(function (i, row) {
-            var row = $(row),
-                type = row.find('.typeCol input').val(),
-                transDate = row.find('.transDateCol input').val(),
-                postDate = row.find('.postDateCol input').val(),
-                desc = row.find('.descCol input').val(),
-                amt = row.find('.amtCol input').val();
+            var $row = $(row),
+                type = $row.find('.typeCol input').val(),
+                transDate = $row.find('.transDateCol input').val(),
+                postDate = $row.find('.postDateCol input').val(),
+                desc = $row.find('.descCol input').val(),
+                amt = $row.find('.amtCol input').val();
              if (type !== undefined) {
                if (type != '' || transDate != '' || postDate != '' || desc != '' || amt != '') {
                  var data = {type: type, transDate: transDate, postDate: postDate, desc: desc, amt: amt};
