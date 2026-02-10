@@ -1,47 +1,47 @@
 //--GLOBALS--
-A_ASCII_CODE = 'A'.charCodeAt(0);
+var A_ASCII_CODE = 'A'.charCodeAt(0);
 
 // Template Constants
-TEMPLATE_SHEET_ID = '1Fse7LA-frH8CnIXmCmpVwg9_1TRLxHj2r_5XDqrvd4E';
-TEMPLATE_CATEGORIES_SHEET_NAME = 'Categories Dropdown';
-TEMPLATE_TRANSACTION_SHEET_NAME = 'Transactions';
-TEMPLATE_EXPENSES_SHEET_NAME = '2018 Expenses';
-TEMPLATE_INCOME_SHEET_NAME = '2018 Income';
-TEMPLATE_SUMMARY_SHEET_NAME = '2018 Summary';
+var TEMPLATE_SHEET_ID = '1Fse7LA-frH8CnIXmCmpVwg9_1TRLxHj2r_5XDqrvd4E';
+var TEMPLATE_CATEGORIES_SHEET_NAME = 'Categories Dropdown';
+var TEMPLATE_TRANSACTION_SHEET_NAME = 'Transactions';
+var TEMPLATE_EXPENSES_SHEET_NAME = '2018 Expenses';
+var TEMPLATE_INCOME_SHEET_NAME = '2018 Income';
+var TEMPLATE_SUMMARY_SHEET_NAME = '2018 Summary';
 
 // Column Constants
-A_COL = colNameToNum('A');
-B_COL = colNameToNum('B');
-C_COL = colNameToNum('C');
-R_COL = colNameToNum('R');
-CATEGORY_COL = colNameToNum('A');
-SUB_CATEGORY_COL = colNameToNum('C');
-MONTHLY_TOTALS_COL = SUB_CATEGORY_COL;
-JAN_COL = colNameToNum('D');
-DEC_COL = colNameToNum('O');
-TOTAL_COL = colNameToNum('P');
-AVG_COL = colNameToNum('Q');
-BUDGET_COL = colNameToNum('R');
-TRANSACTION_CAT_COL = colNameToNum('F');
-TRANSACTION_SUBCAT_COL = colNameToNum('G');
-DATE_ROW = 3;
+var A_COL = colNameToNum('A');
+var B_COL = colNameToNum('B');
+var C_COL = colNameToNum('C');
+var R_COL = colNameToNum('R');
+var CATEGORY_COL = colNameToNum('A');
+var SUB_CATEGORY_COL = colNameToNum('C');
+var MONTHLY_TOTALS_COL = SUB_CATEGORY_COL;
+var JAN_COL = colNameToNum('D');
+var DEC_COL = colNameToNum('O');
+var TOTAL_COL = colNameToNum('P');
+var AVG_COL = colNameToNum('Q');
+var BUDGET_COL = colNameToNum('R');
+var TRANSACTION_CAT_COL = colNameToNum('F');
+var TRANSACTION_SUBCAT_COL = colNameToNum('G');
+var DATE_ROW = 3;
 
 // Menu Names
-MAIN_MENU = "Budget Tracker";
-SETUP_BUDGET = 'Setup Budget';
-ENTER_TRANSACTIONS_MENU = 'Enter Transactions';
-FIX_FORMULAS_MENU = 'Fix Formulas';
-FIX_CATEGORY_DROPDOWNS_MENU = 'Fix Category Dropdowns';
+var MAIN_MENU = "SpendTab";
+var SETUP_BUDGET = 'Setup SpendTab';
+var ENTER_TRANSACTIONS_MENU = 'Enter Transactions';
+var FIX_FORMULAS_MENU = 'Fix Formulas';
+var FIX_CATEGORY_DROPDOWNS_MENU = 'Fix Category Dropdowns';
 
 // Sheet Names
-TRANSACTION_SHEET_NAME = 'Transactions';
-EXPENSES_SHEET_NAME_SUFFIX = ' Expenses';
-INCOME_SHEET_NAME_SUFFIX = ' Income';
-SUMMARY_SHEET_NAME_SUFFIX = ' Summary';
-EXPENSES_SHEET_NAME = getCurrentYear() + EXPENSES_SHEET_NAME_SUFFIX;
-INCOME_SHEET_NAME = getCurrentYear() + INCOME_SHEET_NAME_SUFFIX;
-SUMMARY_SHEET_NAME = getCurrentYear() + SUMMARY_SHEET_NAME_SUFFIX;
-CATEGORIES_SHEET_NAME = 'Categories Dropdown';
+var TRANSACTION_SHEET_NAME = 'Transactions';
+var EXPENSES_SHEET_NAME_SUFFIX = ' Expenses';
+var INCOME_SHEET_NAME_SUFFIX = ' Income';
+var SUMMARY_SHEET_NAME_SUFFIX = ' Summary';
+var EXPENSES_SHEET_NAME = getCurrentYear() + EXPENSES_SHEET_NAME_SUFFIX;
+var INCOME_SHEET_NAME = getCurrentYear() + INCOME_SHEET_NAME_SUFFIX;
+var SUMMARY_SHEET_NAME = getCurrentYear() + SUMMARY_SHEET_NAME_SUFFIX;
+var CATEGORIES_SHEET_NAME = 'Categories Dropdown';
 
 
 ///////////////////////////////////////////////////////////
@@ -615,7 +615,7 @@ function enterTransactions(transactionData) {
     details += '<table>'
     for (var i = 0; i < suppressedTransactions.length; ++i) {
       var tran = suppressedTransactions[i];
-      details += '<tr><td>' + tran.transDate + '</td><td>' + tran.desc + '</td><td><strong>' + tran.amt + '</strong></td></tr>';
+      details += '<tr><td>' + escapeHtml(tran.transDate) + '</td><td>' + escapeHtml(tran.desc) + '</td><td><strong>' + escapeHtml(tran.amt) + '</strong></td></tr>';
     }
     details += '</table>';
     
@@ -672,6 +672,16 @@ function fixAmount(amt, isChecking) {
 ///////////////////////////////////////////////////////////
 // Utility functions
 ///////////////////////////////////////////////////////////
+
+function escapeHtml(text) {
+  if (text == null) return '';
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
 
 function getCurrentYear() {
   return new Date().getFullYear();

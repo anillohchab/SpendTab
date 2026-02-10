@@ -1,2 +1,5 @@
-# Prapanji
-Prapanji (Sanskrit word for Ledger) is a budget tracking app for Google Spreadsheets. Its a fork from initial "Budget Tracker" app script on Google (Thanks Tad Smith for sharing this to me).
+# SpendTab
+
+SpendTab is a personal finance tracking add-on for Google Sheets. Track your spending, categorize transactions, and visualize your expenses and income.
+
+Originally forked from the "Budget Tracker" Google Apps Script (Thanks Tad Smith for the initial contribution).
