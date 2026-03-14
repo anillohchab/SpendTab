@@ -43,6 +43,10 @@ var INCOME_SHEET_NAME = getCurrentYear() + INCOME_SHEET_NAME_SUFFIX;
 var SUMMARY_SHEET_NAME = getCurrentYear() + SUMMARY_SHEET_NAME_SUFFIX;
 var CATEGORIES_SHEET_NAME = 'Categories Dropdown';
 
+// Category Layout Constants
+var NUM_CATEGORY_ROWS = 25;
+var MAX_SUBCATEGORIES = 20;
+
 
 ///////////////////////////////////////////////////////////
 // Public methods
@@ -64,7 +68,7 @@ function onOpen(e) {
     menu = SpreadsheetApp.getUi().createMenu(MAIN_MENU);
     var properties = PropertiesService.getDocumentProperties();
     var budgetTrackerVersion = properties.getProperty('budgetTrackerVersion');
-    if (budgetTrackerVersion !== null) {
+    if (budgetTrackerVersion != null) {
       installTriggers = true;
       addMenuItems(menu);
     } else {
@@ -143,7 +147,7 @@ function onEdit(e) {
       return;
     }
     
-    var categorySheetName = CATEGORIES_SHEET_NAME
+    var categorySheetName = CATEGORIES_SHEET_NAME;
     if (sheetName != TRANSACTION_SHEET_NAME) {
       var prefix = sheetName.replace(TRANSACTION_SHEET_NAME, '');
       categorySheetName = prefix + CATEGORIES_SHEET_NAME;
@@ -229,26 +233,26 @@ function copySheet(srcSpreadsheet, destSpreadsheet, sheetName) {
 }
 
 function setupExpensesSheet(newExpenseSheet) {
-  newExpenseSheet.setName(EXPENSES_SHEET_NAME)
+  newExpenseSheet.setName(EXPENSES_SHEET_NAME);
   newExpenseSheet.getRange('D2').setValue(getCurrentYear());
 }
 
 function setupIncomeSheet(newIncomeSheet) {
-  newIncomeSheet.setName(INCOME_SHEET_NAME)
+  newIncomeSheet.setName(INCOME_SHEET_NAME);
   newIncomeSheet.getRange('D2').setValue(getCurrentYear());
 }
 
 function setupSummarySheet(newSummarySheet, startBalanceFormula) {
-  newSummarySheet.setName(SUMMARY_SHEET_NAME)
+  newSummarySheet.setName(SUMMARY_SHEET_NAME);
   newSummarySheet.getRange('E21').setValue(getCurrentYear());
   newSummarySheet.getRange('E22').setFormula(startBalanceFormula);
   newSummarySheet.getRange('E23').setValue(EXPENSES_SHEET_NAME);
   newSummarySheet.getRange('E24').setValue(INCOME_SHEET_NAME);
   newSummarySheet.getRange('D31').setFormula('=(E22+D28)-D29');
-  newSummarySheet.getRange('C35').setFormula('=unique({0}!A:A)'.format("'" + INCOME_SHEET_NAME + "'"));
-  newSummarySheet.getRange('B36').setFormula('=ArrayFormula(iferror(match(C36:C45,{0}!A:A,0)))'.format("'" + INCOME_SHEET_NAME + "'"));
-  newSummarySheet.getRange('C48').setFormula('=unique({0}!A:A)'.format("'" + EXPENSES_SHEET_NAME + "'"));
-  newSummarySheet.getRange('B49').setFormula('=ArrayFormula(iferror(match(C49:C64,{0}!A:A,0)))'.format("'" + EXPENSES_SHEET_NAME + "'"));
+  newSummarySheet.getRange('C35').setFormula(formatString('=unique({0}!A:A)', "'" + INCOME_SHEET_NAME + "'"));
+  newSummarySheet.getRange('B36').setFormula(formatString('=ArrayFormula(iferror(match(C36:C45,{0}!A:A,0)))', "'" + INCOME_SHEET_NAME + "'"));
+  newSummarySheet.getRange('C48').setFormula(formatString('=unique({0}!A:A)', "'" + EXPENSES_SHEET_NAME + "'"));
+  newSummarySheet.getRange('B49').setFormula(formatString('=ArrayFormula(iferror(match(C49:C64,{0}!A:A,0)))', "'" + EXPENSES_SHEET_NAME + "'"));
   newSummarySheet.protect().setWarningOnly(true);
 }
 
@@ -284,7 +288,7 @@ function createCurrentYearSheets() {
   var oldSummarySheet = spreadsheet.getSheetByName(oldSummarySheetName);
   if (oldSummarySheet != null) {
     var newSummarySheet = oldSummarySheet.copyTo(spreadsheet);
-    setupSummarySheet(newSummarySheet, '={0}!O31'.format("'" + oldSummarySheetName + "'"));
+    setupSummarySheet(newSummarySheet, formatString('={0}!O31', "'" + oldSummarySheetName + "'"));
     newSummarySheet.activate();
     spreadsheet.moveActiveSheet(5);
   }
@@ -342,15 +346,16 @@ function fixCategory() {
     SpreadsheetApp.getUi().alert('Missing ' + CATEGORIES_SHEET_NAME + ' sheet.  Please add it and try again.');
     return;
   }
-  var range = categorySheet.getRange(1, 1, 60, 25);
+  var range = categorySheet.getRange(1, 1, NUM_CATEGORY_ROWS * 2 + 10, NUM_CATEGORY_ROWS);
   
   range.clear();
   
   var startRow = 1;
   setCategoryCells(range, startRow, EXPENSES_SHEET_NAME);
-  range.getCell(startRow + 27, B_COL).setValue('---');
-  range.getCell(startRow + 27, C_COL).setValue('---');
-  setCategoryCells(range, startRow + 27 + 1, INCOME_SHEET_NAME);
+  var sectionOffset = NUM_CATEGORY_ROWS + 2;
+  range.getCell(startRow + sectionOffset, B_COL).setValue('---');
+  range.getCell(startRow + sectionOffset, C_COL).setValue('---');
+  setCategoryCells(range, startRow + sectionOffset + 1, INCOME_SHEET_NAME);
 }
 
 function fixSubCategory(spreadsheet, transactionSheet, transactionRange, categorySheetName) {
@@ -375,7 +380,7 @@ function fixSubCategory(spreadsheet, transactionSheet, transactionRange, categor
     var subCategoryCell = transactionSheet.getRange(row, TRANSACTION_SUBCAT_COL);
     var categoryRow = categoryToRow[transactionSheet.getRange(row, TRANSACTION_CAT_COL).getValue()];
     if (categoryRow != undefined) {
-      var validationRange = categorySheet.getRange(categoryRow, 3, 1, 20);
+      var validationRange = categorySheet.getRange(categoryRow, 3, 1, MAX_SUBCATEGORIES);
       var rule = SpreadsheetApp.newDataValidation().requireValueInRange(validationRange).build();
       subCategoryCell.setDataValidation(rule);
     } else {
@@ -386,18 +391,17 @@ function fixSubCategory(spreadsheet, transactionSheet, transactionRange, categor
 
 function setCategoryCells(range, startRow, refSheetName) {
   refSheetName = "'" + refSheetName + "'";
-  var NUM_ROWS = 25;
-  
+
   // Update "Row #" row
   var curRow = startRow;
   range.getCell(curRow, A_COL).setValue('Row #');
-  range.getCell(curRow, B_COL).setFormula('=uniQue({0}!A:A)'.format(refSheetName));
+  range.getCell(curRow, B_COL).setFormula(formatString('=uniQue({0}!A:A)', refSheetName));
   range.getCell(++curRow, A_COL)
-  .setFormula('=ArrayFormula(iferror(match(B{0}:B{1},{2}!$A:$A,0)))'.format(curRow, curRow + 25, refSheetName))
-  .setNote('This formula matches the categories in column C with their locations in the {0} tab, then displays the resulting row number. The formula in column D uses it to calculate the values in columns D:Q.'.format(refSheetName));
-  
-  for (var row = curRow, l = row + 25; row <= l; ++row) {
-    var formula = '=if(not(isblank(A{0})), Transpose(indirect("{2}!C"&A{0}+1&":C"&if(isblank(A{1}), A{0}+10, A{1}-1))),"")'.format(row, row + 1, refSheetName);
+  .setFormula(formatString('=ArrayFormula(iferror(match(B{0}:B{1},{2}!$A:$A,0)))', curRow, curRow + NUM_CATEGORY_ROWS, refSheetName))
+  .setNote(formatString('This formula matches the categories in column C with their locations in the {0} tab, then displays the resulting row number. The formula in column D uses it to calculate the values in columns D:Q.', refSheetName));
+
+  for (var row = curRow, l = row + NUM_CATEGORY_ROWS; row <= l; ++row) {
+    var formula = formatString('=if(not(isblank(A{0})), Transpose(indirect("{2}!C"&A{0}+1&":C"&if(isblank(A{1}), A{0}+10, A{1}-1))),"")' , row, row + 1, refSheetName);
     range.getCell(row, C_COL).setFormula(formula);
   }
 }
@@ -426,11 +430,6 @@ function fixAllSheetFormulas() {
 }
 
 function fixSheetFormulas(sheet, expenses) {
-  // FIXME- Remove this write-repair when all old spreadsheets have been updated
-  if (sheet.getRange('C3').getValue() == 'Transaction Sheet') {
-    sheet.deleteRow(3);
-  }
-  
   var categories = findCategoryRows(sheet);
   
   categories.forEach(function(category) {
@@ -463,7 +462,7 @@ function findCategoryRows(sheet) {
         curCategory.subCategories.push(subCategory);
       }
       
-      curCategory.endRowNum = rowNum
+      curCategory.endRowNum = rowNum;
     }
   }
   
@@ -482,7 +481,7 @@ function updateCategoryRowFormulas(sheet, category) {
   for (var col = JAN_COL; col <= BUDGET_COL; ++col) {
     var colName = colNumToName(col);
     
-    var formula = '=SuM({0}{1}:{0}{2})'.format(colName, category.rowNum + 1,category.endRowNum);
+    var formula = formatString('=SuM({0}{1}:{0}{2})', colName, category.rowNum + 1, category.endRowNum);
     range.getCell(category.rowNum, col).setFormula(formula);
   }
 }
@@ -513,14 +512,14 @@ function updateSubCategoryRowFormulas(sheet, subcategory, expenses) {
     if (col == DEC_COL) {
       nextColDateCell = curColDateCell + '+31';
     }
-    var formula = 
-        '={0}SuMIFS({1}, {2}, {3}, {4}, {5}, {6}, ">="&{7}, {6}, "<"&{8})'
-        .format(sign, transAmtRange, transCategoryRange, categoryCell, transSubCategoryRange, subCategoryCell, transDateRange, curColDateCell, nextColDateCell);
+    var formula =
+        formatString('={0}SuMIFS({1}, {2}, {3}, {4}, {5}, {6}, ">="&{7}, {6}, "<"&{8})',
+        sign, transAmtRange, transCategoryRange, categoryCell, transSubCategoryRange, subCategoryCell, transDateRange, curColDateCell, nextColDateCell);
     range.getCell(subcategory.rowNum, col).setFormula(formula);
   }
   
   // Fix Total formula
-  var totalFormula = '=SuM(D{0}:O{0})'.format(subcategory.rowNum);
+  var totalFormula = formatString('=SuM(D{0}:O{0})', subcategory.rowNum);
   range.getCell(subcategory.rowNum, TOTAL_COL).setFormula(totalFormula);
   
   // Fix Average formula
@@ -528,16 +527,26 @@ function updateSubCategoryRowFormulas(sheet, subcategory, expenses) {
 }
 
 function updateAverageFormula(range, subcategory) {
-  var avgFormula = '=IFerror(averageifs(D{0}:O{0}, $D${1}:$O${1}, ">="&StartingDate, $D${1}:$O${1}, "<="&TODAY()))'.format(subcategory.rowNum, DATE_ROW);
+  var avgFormula = formatString('=IFerror(averageifs(D{0}:O{0}, $D${1}:$O${1}, ">="&StartingDate, $D${1}:$O${1}, "<="&TODAY()))', subcategory.rowNum, DATE_ROW);
   range.getCell(subcategory.rowNum, AVG_COL).setFormula(avgFormula);
 }
 
 function colNameToNum(colName) {
-  return colName.charCodeAt(0) - A_ASCII_CODE + 1;
+  var result = 0;
+  for (var i = 0; i < colName.length; i++) {
+    result = result * 26 + (colName.charCodeAt(i) - A_ASCII_CODE + 1);
+  }
+  return result;
 }
 
 function colNumToName(colNum) {
-  return String.fromCharCode(A_ASCII_CODE + colNum - 1);
+  var name = '';
+  while (colNum > 0) {
+    colNum--;
+    name = String.fromCharCode(A_ASCII_CODE + (colNum % 26)) + name;
+    colNum = Math.floor(colNum / 26);
+  }
+  return name;
 }
 
 
@@ -739,26 +748,13 @@ function getPreviousYear() {
   return new Date().getFullYear() - 1;
 }
 
-if (!String.prototype.format) {
-  String.prototype.format = function() {
-    var args = arguments;
-    return this.replace(/{(\d+)}/g, function(match, number) { 
-      return typeof args[number] != 'undefined'
-        ? args[number]
-        : match
-      ;
-    });
-  };
-}
-
-if (!String.prototype.startsWith) {
-  String.prototype.startsWith = function(prefix) {
-      return this.indexOf(prefix) === 0;
-  }
-}
-
-if (!String.prototype.endsWith) {
-  String.prototype.endsWith = function(suffix) {
-    return this.match(suffix+"$") == suffix;
-  }
+function formatString(template) {
+  var args = arguments;
+  return template.replace(/{(\d+)}/g, function(match, number) {
+    // Offset by 1 since args[0] is the template itself
+    var argIndex = parseInt(number) + 1;
+    return typeof args[argIndex] != 'undefined'
+      ? args[argIndex]
+      : match;
+  });
 }
